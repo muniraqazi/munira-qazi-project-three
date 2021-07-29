@@ -21,46 +21,80 @@
     // -dropdown menu to filter items 
 import { useEffect, useState } from 'react';
 import firebase from './firebase';
-import './App.css';
+// import './App.css';
+import Header from './Header';
+import Main from './Main';
+import Cart from './Cart';
+import data from './data';
 
+function App() {
+  const {items} = data;
 
-function ShopApp() {
-  const [items, setItems] = useState([]);
+  const [cartItems, setCartItems] = useState([]);
+  const [addToCart, setAddToCart] = useState("");
+
 
   //USE EFFECT
   useEffect(() => {
     //get object that references database
     const dbRef = firebase.database().ref();
+
     dbRef.on('value', (response) => {
+      const data = response.val();
+      
+      const newArray = [];
 
-    const newState = [];
 
-    const data = response.val();
+    for (let propertyName in data) {
+      newArray.push(data[propertyName]);
 
-    for (let key in data) {
-      newState.push(data[key]);
+      const itemObj = {
+        key: propertyName,
+        name: data[propertyName]
+      }
+
+      newArray.push(itemObj);
     }
 
-    setItems(newState);
-      // console.log(response.val());
+    console.log(newArray);
+    setCartItems(newArray);
     })
   }, [])
+  //empty useEffect array means it will only run it once
+  //END OF USE EFFECT
 
+  // const handleAdd = (event) => {
+  //   setAddToCart(event.target.value);
+  // }
+
+  // const handleSubmit = (event) => {
+  //   event.preventDefault();
+
+  //   //we create a reference to our firebase database:
+  //   const dbRef = firebase.database().ref();
+
+  //   dbRef.push(addToCart);
+
+  //   setAddToCart("");
+  // }
+
+  const handleDelete = (keyOfItemToDelete) => {
+    //create a reference to our firebase database
+    const dbRef = firebase.database().ref();  
+    //go get the specific property to delete in firebase and remove it
+    dbRef.child(keyOfItemToDelete).remove();
+  }
   
   return (
-    <div>
-      <ul>
-        {items.map((item) => {
-          return (
-            <li>
-              <p>{item}</p>
-            </li>
-          )
-        })}
-      </ul>
-
+    <div className="app">
+      <Header/>
+      <div className="row">
+      <Main items={items}/>
+      <Cart cartItems={cartItems}/>
+      
+      </div>
     </div>
   )
 }
 
-export default ShopApp;
+export default App;
